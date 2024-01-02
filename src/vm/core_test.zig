@@ -3030,7 +3030,7 @@ test "CairoVM: verifyAutoDeductions for keccak builtin runner" {
 
     defer keccak_builtin.deinit();
 
-    const builtin = BuiltinRunner{ .Keccak = keccak_builtin };
+    const builtin = BuiltinRunner{ .Keccak = &keccak_builtin };
 
     var vm = try CairoVM.init(allocator, .{});
     defer vm.deinit();
