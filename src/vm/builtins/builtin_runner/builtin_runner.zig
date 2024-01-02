@@ -34,7 +34,7 @@ pub const BuiltinRunner = union(enum) {
     /// Range Check built-in runner for range check operations.
     RangeCheck: RangeCheckBuiltinRunner,
     /// Keccak built-in runner for Keccak operations.
-    Keccak: KeccakBuiltinRunner,
+    Keccak: *KeccakBuiltinRunner,
     /// Signature built-in runner for signature operations.
     Signature: SignatureBuiltinRunner,
     /// Poseidon built-in runner for Poseidon operations.
@@ -56,7 +56,7 @@ pub const BuiltinRunner = union(enum) {
             .Hash => |*hash| hash.base,
             .Output => |*output| output.base,
             .RangeCheck => |*range_check| range_check.base,
-            .Keccak => |*keccak| keccak.base,
+            .Keccak => |keccak| keccak.base,
             .Signature => |*signature| signature.base,
             .Poseidon => |*poseidon| poseidon.base,
             .SegmentArena => |*segment_arena| @as(usize, @intCast(segment_arena.base.segment_index)),
@@ -75,7 +75,7 @@ pub const BuiltinRunner = union(enum) {
             .Hash => |*hash| try hash.initSegments(segments),
             .Output => |*output| try output.initSegments(segments),
             .RangeCheck => |*range_check| try range_check.initSegments(segments),
-            .Keccak => |*keccak| try keccak.initSegments(segments),
+            .Keccak => |keccak| try keccak.initSegments(segments),
             .Signature => |*signature| try signature.initSegments(segments),
             .Poseidon => |*poseidon| try poseidon.initSegments(segments),
             .SegmentArena => |*segment_arena| try segment_arena.initSegments(segments),
@@ -94,13 +94,13 @@ pub const BuiltinRunner = union(enum) {
             .Hash => |*hash| try hash.initialStack(allocator),
             .Output => |*output| try output.initialStack(allocator),
             .RangeCheck => |*range_check| try range_check.initialStack(allocator),
-            .Keccak => |*keccak| try keccak.initialStack(allocator),
+            .Keccak => |keccak| try keccak.initialStack(allocator),
             .Signature => |*signature| try signature.initialStack(allocator),
             .Poseidon => |*poseidon| try poseidon.initialStack(allocator),
             .SegmentArena => |*segment_arena| try segment_arena.initialStack(allocator),
         };
     }
-    
+
     /// Deduces memory cell information for the built-in runner.
     ///
     /// This function deduces memory cell information for the specific type of built-in runner.
@@ -126,8 +126,7 @@ pub const BuiltinRunner = union(enum) {
             .Output => |output| output.deduceMemoryCell(address, memory),
             .RangeCheck => |range_check| range_check.deduceMemoryCell(address, memory),
             .Keccak => |keccak| {
-                var mut_keccak = keccak;
-                return mut_keccak.deduceMemoryCell(allocator, address, memory);
+                return try keccak.deduceMemoryCell(allocator, address, memory);
             },
             .Signature => |signature| signature.deduceMemoryCell(address, memory),
             .Poseidon => |poseidon| poseidon.deduceMemoryCell(address, memory),
